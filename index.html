@@ -353,54 +353,6 @@ function saveScore(name, score) {
 
     localStorage.setItem("rankings", JSON.stringify(rankings));
 }
-function showGameOverPopup() {
-    // หยุดเกมทันที
-    cancelAnimationFrame(updateLoop);
-    clearInterval(gameTimer);
-
-    // สร้างกล่อง Popup
-    let popup = document.createElement("div");
-    popup.style.position = "fixed";
-    popup.style.top = "50%";
-    popup.style.left = "50%";
-    popup.style.transform = "translate(-50%, -50%)";
-    popup.style.background = "rgba(0, 0, 0, 0.9)";
-    popup.style.color = "white";
-    popup.style.padding = "20px";
-    popup.style.textAlign = "center";
-    popup.style.borderRadius = "10px";
-    popup.style.fontSize = "24px";
-    popup.style.zIndex = "1000";
-    popup.style.boxShadow = "0px 0px 15px red";
-
-    popup.innerHTML = `
-        <h2 style="color: red; font-size: 28px;">❌ You lose! ❌</h2>
-        <p>You failed to be careful</p>
-        <button id="restartGame" style="
-            padding: 10px 20px;
-            font-size: 18px;
-            background: red;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-            margin-top: 10px;
-        ">เล่นใหม่</button>
-    `;
-
-    document.body.appendChild(popup);
-
-    // หยุดอีเวนต์ทั้งหมดที่เกิดขึ้นในเกม
-    canvas.style.pointerEvents = "none";
-
-    // เพิ่ม Event ให้ปุ่ม "เล่นใหม่"
-    document.getElementById("restartGame").addEventListener("click", () => {
-        location.reload();
-    });
-}
-
-}
-
 function showRanking() {
     rankingList.innerHTML = ""; // เคลียร์รายการก่อนแสดงผลใหม่
     let rankings = JSON.parse(localStorage.getItem("rankings")) || [];
@@ -463,17 +415,19 @@ canvas.addEventListener("click", (event) => {
     console.log(`📍 คลิกที่ (${mouseX}, ${mouseY})`);
 
     // เช็คว่าคลิกโดนตัวอันตรายหรือไม่
-// ถ้าคลิกโดนตัวอันตราย
-if (dangerTarget &&
-    mouseX >= dangerTarget.x &&
-    mouseX <= dangerTarget.x + dangerTarget.width &&
-    mouseY >= dangerTarget.y &&
-    mouseY <= dangerTarget.y + dangerTarget.height) {
-    
-    console.log("❌ คลิกโดนตัวอันตราย! เกมจบ!");
-    showGameOverPopup(); // 🔥 เรียกใช้ฟังก์ชัน Popup
-    return;
-}
+    if (dangerTarget &&
+        mouseX >= dangerTarget.x &&
+        mouseX <= dangerTarget.x + dangerTarget.width &&
+        mouseY >= dangerTarget.y &&
+        mouseY <= dangerTarget.y + dangerTarget.height) {
+        
+        console.log("❌ คลิกโดนตัวอันตราย! เกมจบ!");
+        alert("❌ คุณคลิกโดนตัวอันตราย! แพ้แล้ว!");
+        
+        // ใช้ setTimeout() ป้องกันปัญหาการรีโหลดไม่ทำงาน
+        setTimeout(() => location.reload(), 100);
+        return; // ออกจากฟังก์ชันทันที
+    }
 
     // เช็คว่าคลิกโดนเป็ดหรือไม่
     ducks.forEach((duck, index) => {
