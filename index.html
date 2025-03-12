@@ -71,8 +71,6 @@
     <source src="https://drive.google.com/uc?export=download&id=11JV6dpn4iVSmw4tSuzO13DqZr_hF2iej" type="audio/mpeg">
 </audio>
 <audio id="gameOverSound" src="https://www.fesliyanstudios.com/play-mp3/4383"></audio>
-<audio id="powerUpSound" src="https://www.fesliyanstudios.com/play-mp3/4399"></audio>
-<audio id="explosionSound" src="https://www.fesliyanstudios.com/play-mp3/4385"></audio>
 
 <button id="toggleMusic" onclick="toggleMusic()">🔊 Music On</button>
 
@@ -95,16 +93,19 @@ const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 const bgMusic = document.getElementById("bgMusic");
 const gameOverSound = document.getElementById("gameOverSound");
-const powerUpSound = document.getElementById("powerUpSound");
-const explosionSound = document.getElementById("explosionSound");
 const toggleMusicBtn = document.getElementById("toggleMusic");
 
 let ducks = [];
 let gameTime = 30;
 let gameTimer = null;
 let score = 0;
-let bomb = null;
-let powerUp = null;
+
+const duckImages = [
+    "https://img5.pic.in.th/file/secure-sv1/plsss.png",
+    "https://img5.pic.in.th/file/secure-sv1/c02363ac-2b99-47d2-b378-e35074b8d3e3.png",
+    "https://img2.pic.in.th/pic/bal-2m.png",
+    "https://img5.pic.in.th/file/secure-sv1/sooner.png"
+];
 
 function resizeCanvas() {
     canvas.width = window.innerWidth;
@@ -121,8 +122,6 @@ function startGame() {
     for (let i = 0; i < 5; i++) {
         ducks.push(createDuck());
     }
-    bomb = createBomb();
-    powerUp = createPowerUp();
     gameTimer = setInterval(updateGame, 1000);
     update();
 }
@@ -130,28 +129,22 @@ function startGame() {
 function updateGame() {
     gameTime--;
     if (gameTime <= 0) endGame();
-    if (gameTime % 7 === 0) bomb = createBomb();
-    if (gameTime % 12 === 0) powerUp = createPowerUp();
 }
 
 function createDuck() {
     let size = Math.random() * 50 + 50;
+    let duckImg = new Image();
+    duckImg.src = duckImages[Math.floor(Math.random() * duckImages.length)];
+    
     return {
         x: Math.random() * (canvas.width - size),
         y: Math.random() * (canvas.height - size),
         width: size,
         height: size,
         speedX: Math.random() * 3 + 1,
-        speedY: Math.random() * 3 + 1
+        speedY: Math.random() * 3 + 1,
+        image: duckImg
     };
-}
-
-function createBomb() {
-    return { x: Math.random() * canvas.width, y: Math.random() * canvas.height, width: 60, height: 60 };
-}
-
-function createPowerUp() {
-    return { x: Math.random() * canvas.width, y: Math.random() * canvas.height, width: 50, height: 50 };
 }
 
 function update() {
@@ -159,28 +152,31 @@ function update() {
     ducks.forEach(duck => {
         duck.x += duck.speedX;
         duck.y += duck.speedY;
-        ctx.fillRect(duck.x, duck.y, duck.width, duck.height);
+        
+        if (duck.x <= 0 || duck.x + duck.width >= canvas.width) duck.speedX *= -1;
+        if (duck.y <= 0 || duck.y + duck.height >= canvas.height) duck.speedY *= -1;
+        
+        ctx.drawImage(duck.image, duck.x, duck.y, duck.width, duck.height);
     });
-
-    if (bomb) ctx.fillRect(bomb.x, bomb.y, bomb.width, bomb.height);
-    if (powerUp) ctx.fillRect(powerUp.x, powerUp.y, powerUp.width, powerUp.height);
 
     requestAnimationFrame(update);
 }
 
-canvas.addEventListener("click", (event) => {
-    if (bomb && event.clientX >= bomb.x && event.clientX <= bomb.x + bomb.width &&
-        event.clientY >= bomb.y && event.clientY <= bomb.y + bomb.height) {
-        score -= 50;
-        explosionSound.play();
-    }
+function endGame() {
+    clearInterval(gameTimer);
+    bgMusic.pause();
+    gameOverSound.play();
+    document.getElementById("popupScore").textContent = score;
+    document.getElementById("popupContainer").style.display = "flex";
+}
 
-    if (powerUp && event.clientX >= powerUp.x && event.clientX <= powerUp.x + powerUp.width &&
-        event.clientY >= powerUp.y && event.clientY <= powerUp.y + powerUp.height) {
-        gameTime += 10;
-        powerUpSound.play();
-    }
-});
+function submitScore() {
+    let playerName = document.getElementById("playerName").value.trim();
+    if (playerName === "") playerName = "Anonymous";
+    alert(`${playerName} scored ${score} points!`);
+    document.getElementById("popupContainer").style.display = "none";
+    location.reload();
+}
 
 function toggleMusic() {
     if (bgMusic.paused) {
@@ -191,6 +187,24 @@ function toggleMusic() {
         toggleMusicBtn.innerText = "🔇 Music Off";
     }
 }
+
+canvas.addEventListener("click", (event) => {
+    const mouseX = event.clientX;
+    const mouseY = event.clientY;
+
+    ducks.forEach((duck, index) => {
+        if (
+            mouseX >= duck.x &&
+            mouseX <= duck.x + duck.width &&
+            mouseY >= duck.y &&
+            mouseY <= duck.y + duck.height
+        ) {
+            score += 10;
+            ducks.splice(index, 1);
+            ducks.push(createDuck());
+        }
+    });
+});
 </script>
 
 </body>
