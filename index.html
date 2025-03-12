@@ -50,29 +50,9 @@
             width: 300px;
             box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.5);
         }
-        #toggleMusic {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 10px 15px;
-            font-size: 16px;
-            background: white;
-            border: 2px solid black;
-            border-radius: 5px;
-            cursor: pointer;
-            z-index: 3000;
-        }
     </style>
 </head>
 <body>
-
-<audio id="bgMusic" loop>
-    <source src="https://drive.google.com/uc?export=download&id=11JV6dpn4iVSmw4tSuzO13DqZr_hF2iej" type="audio/mpeg">
-</audio>
-<audio id="gameOverSound" src="https://www.fesliyanstudios.com/play-mp3/4383"></audio>
-
-<button id="toggleMusic" onclick="toggleMusic()">🔊 Music On</button>
 
 <img id="crosshair" src="https://img2.pic.in.th/pic/reticle-crosshair-red-icon-free-png-701751694974301y3cnksxiin-removebg-preview.png">
 
@@ -86,19 +66,29 @@
     </div>
 </div>
 
+<div id="gameMenu">
+    <h1> Dr.soon Shooting Game </h1>
+    <p>Click on the Dr.soon to score points! Different Dr.soon sticker give different points.</p>
+    <p>Mini Dr.soon is smaller, faster, and gives 50 points!</p>
+    <h2>Select Game Time</h2>
+    <button onclick="startGame(30)">30 Seconds</button>
+    <button onclick="startGame(60)">1 Minute</button>
+    <button onclick="startGame(180)">3 Minutes</button>
+    <button onclick="showRanking()">View Ranking</button>
+</div>
+
 <canvas id="gameCanvas"></canvas>
 
 <script>
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
-const bgMusic = document.getElementById("bgMusic");
-const gameOverSound = document.getElementById("gameOverSound");
-const toggleMusicBtn = document.getElementById("toggleMusic");
 
 let ducks = [];
 let gameTime = 30;
 let gameTimer = null;
 let score = 0;
+let bomb = null;
+let powerUp = null;
 
 const duckImages = [
     "https://img5.pic.in.th/file/secure-sv1/plsss.png",
@@ -107,6 +97,12 @@ const duckImages = [
     "https://img5.pic.in.th/file/secure-sv1/sooner.png"
 ];
 
+const bombImage = new Image();
+bombImage.src = "https://img2.pic.in.th/pic/bomb.png"; 
+
+const powerUpImage = new Image();
+powerUpImage.src = "https://img2.pic.in.th/pic/clock.png"; 
+
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -114,14 +110,15 @@ function resizeCanvas() {
 window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
 
-function startGame() {
-    bgMusic.play();
-    gameTime = 30;
+function startGame(seconds) {
+    gameTime = seconds;
     score = 0;
     ducks = [];
     for (let i = 0; i < 5; i++) {
         ducks.push(createDuck());
     }
+    bomb = createBomb();
+    powerUp = createPowerUp();
     gameTimer = setInterval(updateGame, 1000);
     update();
 }
@@ -129,6 +126,8 @@ function startGame() {
 function updateGame() {
     gameTime--;
     if (gameTime <= 0) endGame();
+    if (gameTime % 7 === 0) bomb = createBomb();
+    if (gameTime % 12 === 0) powerUp = createPowerUp();
 }
 
 function createDuck() {
@@ -147,11 +146,22 @@ function createDuck() {
     };
 }
 
+function createBomb() {
+    return { x: Math.random() * canvas.width, y: Math.random() * canvas.height, width: 60, height: 60 };
+}
+
+function createPowerUp() {
+    return { x: Math.random() * canvas.width, y: Math.random() * canvas.height, width: 50, height: 50 };
+}
+
 function update() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    let speedMultiplier = gameTime <= 5 ? 2 : 1; 
+
     ducks.forEach(duck => {
-        duck.x += duck.speedX;
-        duck.y += duck.speedY;
+        duck.x += duck.speedX * speedMultiplier;
+        duck.y += duck.speedY * speedMultiplier;
         
         if (duck.x <= 0 || duck.x + duck.width >= canvas.width) duck.speedX *= -1;
         if (duck.y <= 0 || duck.y + duck.height >= canvas.height) duck.speedY *= -1;
@@ -159,38 +169,27 @@ function update() {
         ctx.drawImage(duck.image, duck.x, duck.y, duck.width, duck.height);
     });
 
+    if (bomb) ctx.drawImage(bombImage, bomb.x, bomb.y, bomb.width, bomb.height);
+    if (powerUp) ctx.drawImage(powerUpImage, powerUp.x, powerUp.y, powerUp.width, powerUp.height);
+
     requestAnimationFrame(update);
-}
-
-function endGame() {
-    clearInterval(gameTimer);
-    bgMusic.pause();
-    gameOverSound.play();
-    document.getElementById("popupScore").textContent = score;
-    document.getElementById("popupContainer").style.display = "flex";
-}
-
-function submitScore() {
-    let playerName = document.getElementById("playerName").value.trim();
-    if (playerName === "") playerName = "Anonymous";
-    alert(`${playerName} scored ${score} points!`);
-    document.getElementById("popupContainer").style.display = "none";
-    location.reload();
-}
-
-function toggleMusic() {
-    if (bgMusic.paused) {
-        bgMusic.play();
-        toggleMusicBtn.innerText = "🔊 Music On";
-    } else {
-        bgMusic.pause();
-        toggleMusicBtn.innerText = "🔇 Music Off";
-    }
 }
 
 canvas.addEventListener("click", (event) => {
     const mouseX = event.clientX;
     const mouseY = event.clientY;
+
+    if (bomb && mouseX >= bomb.x && mouseX <= bomb.x + bomb.width &&
+        mouseY >= bomb.y && mouseY <= bomb.y + bomb.height) {
+        score -= 50;
+        return;
+    }
+
+    if (powerUp && mouseX >= powerUp.x && mouseX <= powerUp.x + powerUp.width &&
+        mouseY >= powerUp.y && mouseY <= powerUp.y + powerUp.height) {
+        gameTime += 10;
+        return;
+    }
 
     ducks.forEach((duck, index) => {
         if (
