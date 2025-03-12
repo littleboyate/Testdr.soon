@@ -297,13 +297,6 @@ document.addEventListener("mousemove", (event) => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             let speedMultiplier = gameTime <= 10 ? 1.5 : 1;
-if (gameTime <= 5) {
-    speedMultiplier = 2.5; 
-    if (ducks.length < 10) { 
-        setTimeout(() => {
-            ducks.push(createDuck());
-        }, 500); // เพิ่มเป็ดใหม่ทุก 0.5 วินาที
-    }
 }
             ducks.forEach((duck) => {
                 duck.x += duck.speedX * speedMultiplier;
