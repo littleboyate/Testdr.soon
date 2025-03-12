@@ -82,6 +82,7 @@
 <script>
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
+const gameMenu = document.getElementById("gameMenu");
 
 let ducks = [];
 let gameTime = 30;
@@ -120,6 +121,7 @@ function startGame(seconds) {
     bomb = createBomb();
     powerUp = createPowerUp();
     gameTimer = setInterval(updateGame, 1000);
+    gameMenu.style.display = "none"; // ✅ ซ่อนเมนูเมื่อเกมเริ่ม
     update();
 }
 
