@@ -297,7 +297,14 @@ document.addEventListener("mousemove", (event) => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             let speedMultiplier = gameTime <= 10 ? 1.5 : 1;
-
+if (gameTime <= 5) {
+    speedMultiplier = 2.5; 
+    if (ducks.length < 10) { 
+        setTimeout(() => {
+            ducks.push(createDuck());
+        }, 500); // เพิ่มเป็ดใหม่ทุก 0.5 วินาที
+    }
+}
             ducks.forEach((duck) => {
                 duck.x += duck.speedX * speedMultiplier;
                 duck.y += duck.speedY * speedMultiplier;
@@ -316,6 +323,29 @@ document.addEventListener("mousemove", (event) => {
                 requestAnimationFrame(update);
             }
         }
+let frenzyActive = false; // ตัวแปรเช็คว่าโหมดบ้าคลั่งถูกเปิดไปแล้วหรือยัง
+
+function update() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    let speedMultiplier = gameTime <= 5 ? 2.5 : 1; 
+
+    if (gameTime <= 5 && !frenzyActive) {
+        frenzyActive = true;
+        for (let i = 0; i < 5; i++) { // เพิ่มเป็ดอีก 5 ตัวทีเดียว
+            ducks.push(createDuck());
+        }
+    }
+
+    ducks.forEach(duck => {
+        duck.x += duck.speedX * speedMultiplier;
+        duck.y += duck.speedY * speedMultiplier;
+        ctx.drawImage(duck.image, duck.x, duck.y, duck.width, duck.height);
+    });
+
+    requestAnimationFrame(update);
+}
+
 function saveScore(name, score) {
     let rankings = JSON.parse(localStorage.getItem("rankings")) || [];
     rankings.push({ name, score });
