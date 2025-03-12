@@ -334,13 +334,9 @@ document.addEventListener("mousemove", (event) => {
 
                 ctx.drawImage(duck.image, duck.x, duck.y, duck.width, duck.height);
             });
-// วาดตัวพิเศษห้ามคลิก
+// วาดตัวพิเศษห้ามคลิก (เป็นรูปแทนกล่อง)
 if (dangerTarget) {
-    ctx.fillStyle = "red";
-    ctx.fillRect(dangerTarget.x, dangerTarget.y, dangerTarget.width, dangerTarget.height);
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 3;
-    ctx.strokeRect(dangerTarget.x, dangerTarget.y, dangerTarget.width, dangerTarget.height);
+    ctx.drawImage(dangerTarget.image, dangerTarget.x, dangerTarget.y, dangerTarget.width, dangerTarget.height);
 }
 
             if (gameTime > 0) {
