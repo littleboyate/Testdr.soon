@@ -213,7 +213,7 @@ body {
         let score = 0;
         let gameTime = 0;
         let gameTimer = null;
-
+        let dangerTarget = null; // ตัวพิเศษห้ามคลิก
         const duckImages = [
             { src: "https://img5.pic.in.th/file/secure-sv1/plsss.png", points: 5 },
             { src: "https://img5.pic.in.th/file/secure-sv1/c02363ac-2b99-47d2-b378-e35074b8d3e3.png", points: 10 },
@@ -231,7 +231,26 @@ body {
 
     // 🔫 เพิ่มเสียงยิงเป็ด
     const shootSound = new Audio("https://www.fesliyanstudios.com/play-mp3/4382");
+function createDangerTarget() {
+    let size = 60; // ขนาดตัวห้ามคลิก
+    let x = Math.random() * (canvas.width - size);
+    let y = Math.random() * (canvas.height - size);
 
+    dangerTarget = {
+        x: x,
+        y: y,
+        width: size,
+        height: size
+    };
+
+    // ตั้งเวลาหายไปหลัง 2 วินาที
+    setTimeout(() => {
+        dangerTarget = null;
+    }, 2000);
+}
+
+// ให้ตัวห้ามคลิกปรากฏขึ้นทุก 5 วินาที
+setInterval(createDangerTarget, 5000);
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
@@ -311,6 +330,14 @@ document.addEventListener("mousemove", (event) => {
 
                 ctx.drawImage(duck.image, duck.x, duck.y, duck.width, duck.height);
             });
+// วาดตัวพิเศษห้ามคลิก
+if (dangerTarget) {
+    ctx.fillStyle = "red";
+    ctx.fillRect(dangerTarget.x, dangerTarget.y, dangerTarget.width, dangerTarget.height);
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(dangerTarget.x, dangerTarget.y, dangerTarget.width, dangerTarget.height);
+}
 
             if (gameTime > 0) {
                 requestAnimationFrame(update);
