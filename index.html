@@ -410,7 +410,14 @@ function submitScore() {
         canvas.addEventListener("click", (event) => {
             const mouseX = event.clientX;
             const mouseY = event.clientY;
-
+if (dangerTarget &&
+    mouseX >= dangerTarget.x &&
+    mouseX <= dangerTarget.x + dangerTarget.width &&
+    mouseY >= dangerTarget.y &&
+    mouseY <= dangerTarget.y + dangerTarget.height) {
+    alert("❌ คุณคลิกโดนตัวอันตราย! แพ้แล้ว!");
+    location.reload();
+}
             ducks.forEach((duck, index) => {
                 if (mouseX >= duck.x && mouseX <= duck.x + duck.width && mouseY >= duck.y && mouseY <= duck.y + duck.height) {
                     score += duck.points;
