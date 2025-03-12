@@ -297,12 +297,7 @@ document.addEventListener("mousemove", (event) => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             let speedMultiplier = gameTime <= 10 ? 1.5 : 1;
-    // 🌀 Frenzy Mode: เปิดโหมดบ้าคลั่งเมื่อเวลาเหลือน้อย
-    if (gameTime <= 5) {
-        speedMultiplier = 2.5; 
-        if (ducks.length < 10) { // เพิ่มเป็ดเข้าไปให้โหดขึ้น
-            ducks.push(createDuck());
-        }
+
             ducks.forEach((duck) => {
                 duck.x += duck.speedX * speedMultiplier;
                 duck.y += duck.speedY * speedMultiplier;
